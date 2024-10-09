@@ -38,7 +38,6 @@ Follow these steps to set up and run the PDF Retrieval System:
    - Run `colqwen_query` to perform queries and retrieve results from the local address
    - This step generates HTML files to display the query results visually
 
-For more detailed information on each step, refer to the documentation or contact the system administrator.
 
 ## 🔍 Process Flow
 
@@ -105,8 +104,7 @@ For more detailed information on each step, refer to the documentation or contac
 
 ## 🚀 Future Improvements
 
-- [ ] Add LLM layer for querying retrieved images
+- [ ] Add LLM layer for getting answers from retrieved images
 - [ ] Implement multi-language support
 - [ ] Expand metadata and filtering options
 - [ ] Enhance HTML output with interactive features
-- [ ] Streamline deployment process with containerization
