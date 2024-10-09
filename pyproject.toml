@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "cs-colpali-wsl"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+colpali-engine = "0.3.1"
+poppler-utils = "*"
+pdf2image = "*"
+pypdf = "*"
+pyvespa = "*"
+vespacli = "*"
+requests = "*"
+numpy = "*"
+tqdm = "*"
+ipython = "^8.28.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
