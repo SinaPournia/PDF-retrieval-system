@@ -26,7 +26,7 @@ Ensure you have the following tools installed before proceeding:
   ```
 
 - **PDF Tools**  
-  The project uses `pypdf` for text extraction and `pdf2image` for converting PDF pages to images, both of which are installed via Poetry. However, `pdf2image` requires **Poppler**, a separate system tool. Install Poppler with the following commands:
+  The project uses `pypdf` for text extraction and `pdf2image` for converting PDF pages to images, both of which are added via Poetry. However, `pdf2image` requires **Poppler**, a separate system tool. Install Poppler with the following commands:
   
   - On **macOS** (via Homebrew):
     ```bash
