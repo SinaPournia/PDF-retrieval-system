@@ -1,64 +1,93 @@
+---
+
 # 📚 PDF Retrieval System with ColQwen2 and Vespa
 
 ![PDF Retrieval System Banner](https://cdn-uploads.huggingface.co/production/uploads/60f2e021adf471cbdf8bb660/La8vRJ_dtobqs6WQGKTzB.png)
 
 ## 🌟 Overview
 
-This advanced PDF retrieval solution leverages the power of **ColQwen2** (an improved version of ColPali) and **Vespa** to efficiently process, store, and retrieve PDF content based on both textual and visual features.
+This advanced PDF retrieval system combines **ColQwen2** (an enhanced version of ColPali) and **Vespa** to efficiently process, store, and retrieve PDF content using both textual and visual features.
+
+## 📋 Prerequisites
+
+Ensure you have the following tools installed before proceeding:
+
+- **Vespa CLI**  
+  Install via Homebrew:
+  ```bash
+  brew install vespa-cli
+  ```
+  [More details](https://docs.vespa.ai/en/vespa-cli.html)
+
+- **Poetry**  
+  Poetry is used to manage project dependencies. Install it with:
+  ```bash
+  curl -sSL https://install.python-poetry.org | python3 -
+  ```
+
+- **PDF Tools**  
+  The project uses `pypdf` for text extraction and `pdf2image` for converting PDF pages to images, both of which are installed via Poetry. However, `pdf2image` requires **Poppler**, a separate system tool. Install Poppler with the following commands:
+  
+  - On **macOS** (via Homebrew):
+    ```bash
+    brew install poppler
+    ```
+
+  - On **Ubuntu/Debian**:
+    ```bash
+    sudo apt-get install poppler-utils
+    ```
+
+  - On **Windows**:
+    - Download Poppler from [here](http://blog.alivate.com.au/poppler-windows/).
+    - Add the Poppler `bin` folder to your system's PATH environment variable.
 
 ## 🏃‍♂️ Getting Started
 
-Follow these steps to set up and run the PDF Retrieval System:
+Once you have the prerequisites installed, follow these steps to set up and run the PDF Retrieval System:
 
-1. **Install Dependencies**
-   - Install the project dependencies using Poetry:
-     ```
-     poetry install
-     ```
-   - Activate the virtual environment:
-     ```
-     poetry shell
-     ```
+1. **Install Project Dependencies**  
+   Install the required dependencies for the project using Poetry:
+   ```bash
+   poetry install
+   ```
 
-2. **Generate Vespa Application Folder**
-   - Run `colqwen_create_app` to generate the Vespa application folder
+2. **Start Docker Containers**  
+   Navigate to the project folder and use Docker Compose to start the local Vespa container:
+   ```bash
+   docker compose up
+   ```
 
-3. **Deploy the Application**
-   - Use Vespa CLI to set the target and deploy the generated app to a local Vespa container:
-     ```
-     vespa config set target local
-     vespa deploy
-     ```
-   For more information, visit: https://docs.vespa.ai/en/vespa-quick-start.html
+3. **Create and Deploy Vespa Application**  
+   Run `create_vespa_app.py` to automatically configure the Vespa application schema and deploy it using Vespa CLI.
 
-4. **Embed and Upload Data**
-   - Execute `colqwen_upload_data` to generate embeddings and upload data to the local Vespa container
+4. **Generate and Upload Embeddings**  
+   Execute `create_and_upload_embeddings.py` to generate embeddings from PDFs and upload them to the Vespa container.
 
-5. **Query the System**
-   - Run `colqwen_query` to perform queries and retrieve results from the local address
-   - This step generates HTML files to display the query results visually
+5. **Retrieve and Generate Report**  
+   Run `retrive_and_generate_report.py` to query the Vespa application and retrieve results. This will generate HTML files to visualize the retrieved results.
 
+---
 
 ## 🔍 Process Flow
 
-1. **Text Extraction** 📄
-   - Extract text from PDFs using `pypdf`
+1. **Text Extraction**  
+   Extract text from PDFs using the `pypdf` library.
 
-2. **Image Creation** 🖼️
-   - Convert PDF pages to images with `pdf2image`
+2. **Image Creation**  
+   Convert PDF pages to images with `pdf2image`.
 
-3. **Embedding Generation** 🧠
-   - Generate embeddings for each PDF page using ColQwen2
+3. **Embedding Generation**  
+   Generate embeddings for each PDF page using ColQwen2.
 
-4. **Binary Quantization** 💾
-   - Convert 128-dimensional embeddings into binary quantized form
-   - Reduces size by 32x (128-bit binary vectors)
+4. **Binary Quantization**  
+   Quantize embeddings to binary format, reducing their size by 32x (128-bit binary vectors).
 
-5. **Data Preparation** 🗃️
-   - Organize text, images, embeddings, and metadata into JSON objects
-   - Prepare "vespa_feed" in Vespa JSON format
+5. **Data Preparation**  
+   Organize extracted text, images, embeddings, and metadata into JSON objects formatted for Vespa.
 
-6. **Vespa Schema Configuration and Deployment** 📐
+6. **Vespa Schema Configuration and Deployment**  
+   The Vespa schema is configured as follows:
    ```yaml
    fields:
      id: string
@@ -70,41 +99,42 @@ Follow these steps to set up and run the PDF Retrieval System:
      embedding: tensor<int8>(patch{}, v[16])
    ```
 
+7. **Data Storage**  
+   Store the prepared data in Vespa via its API.
 
-7. **Data Storage** 💽
-   - Store prepared data in Vespa via API
+8. **Query Processing and Retrieval**  
+   Implement text-based retrieval using BM25, and re-rank results using embeddings with nearest-neighbor search (MaxSim).
 
-8. **Query Processing and Retrieval** 🔎
-   - Text-based retrieval with embedding re-ranking (BM25)
-   - Embedding-based retrieval (nearest neighbor + MaxSim)
+9. **Response Generation**  
+   Display ranked results as HTML files, combining visual and textual content from PDFs.
 
-9. **Response Generation** 📊
-   - Rank and display retrieved PDF pages with visual and textual content
-   - Generate HTML files to visualize query results
+---
 
 ## 🛠️ Key Components
 
-| Component | Description |
-|-----------|-------------|
-| ColQwen2 | Improved version of ColPali for embedding generation |
-| Vespa | Vector database for efficient storage and retrieval |
-| HNSW Index | Fast nearest neighbor search on binary embeddings |
-| BM25 | Initial text-based retrieval |
-| MaxSim | Re-ranking based on embedding similarity |
-| Poetry | Dependency management and packaging tool |
+| Component   | Description                                                 |
+|-------------|-------------------------------------------------------------|
+| ColQwen2    | Advanced embedding generator based on ColPali                |
+| Vespa       | Vector database for efficient storage and retrieval          |
+| HNSW Index  | Fast nearest-neighbor search on binary embeddings            |
+| BM25        | Text-based initial retrieval                                 |
+| MaxSim      | Re-ranking based on embedding similarity                     |
+| Poetry      | Dependency management and packaging tool                     |
 
 ## ✨ Features
 
-- 📉 Efficient embedding storage via binary quantization
-- 🚀 Fast retrieval using HNSW index and Hamming distance
-- 🔀 Flexible ranking pipeline (textual + visual features)
-- 📈 Scalable to large PDF collections
-- 🖥️ Visual representation of query results through generated HTML files
-- 📦 Easy dependency management with Poetry
+- Efficient storage with binary quantization for embeddings
+- Fast retrieval using HNSW index and Hamming distance
+- Combined ranking pipeline (textual and visual features)
+- Scalable to large PDF collections
+- Visual HTML representation of query results
+- Easy dependency management using Poetry
 
 ## 🚀 Future Improvements
 
-- [ ] Add LLM layer for getting answers from retrieved images
-- [ ] Implement multi-language support
+- [ ] Integrate LLM for answering queries from retrieved images
+- [ ] Add multi-language support
 - [ ] Expand metadata and filtering options
-- [ ] Enhance HTML output with interactive features
+- [ ] Enhance HTML output with interactive elements
+
+---

@@ -4,9 +4,13 @@ import dotenv
 from vespa.package import Schema, Document, Field, FieldSet, HNSW
 from vespa.package import ApplicationPackage
 from vespa.package import RankProfile, Function, FirstPhaseRanking, SecondPhaseRanking
-from config import settings  # Import settings from config.py
+from config import Settings  # Import settings from config.py
 from datetime import datetime, timedelta
-dotenv.load_dotenv()
+
+
+
+
+settings = Settings()
 
 def create_and_save_vespa_schema():
     # Define Vespa schema and ranking profiles

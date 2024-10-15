@@ -78,7 +78,7 @@ def save_query_results_as_html(query, response, hits=5, file_name="results.html"
     print(f"Results saved to: {abs_file_path}")
 
 # Initialize Vespa application with local instance
-app = Vespa(url=settings.vespa_url, port=settings.vespa_port)  # Use dynamic URL and port from settings
+app = Vespa(url=settings.vespa_url)  # Use dynamic URL and port from settings
 
 # Define an asynchronous function to execute queries
 async def main():
