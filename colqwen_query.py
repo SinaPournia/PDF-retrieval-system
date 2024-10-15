@@ -6,29 +6,32 @@ from colpali_engine.models import ColQwen2, ColQwen2Processor
 from vespa.application import Vespa
 import webbrowser
 import os
+from config import settings  # Import settings
+import json
 
-# Initialize the model and processor
-model_name = "impactframes/colqwen2-v0.1"
+with open("queries.json", "r") as f:
+    queries = json.load(f)["queries"]
+
+for query in queries:
+    print(query)
+
+
+# Initialize the model and processor using settings
+model_name = settings.colpali_model_name  # Get model name from settings
 print(torch.cuda.is_available())  # Check if CUDA is available
 model = ColQwen2.from_pretrained(
-    model_name, torch_dtype=torch.bfloat16, device_map={"": "cuda:0"}
-)  # Load model on the GPU (if available)
-processor = ColQwen2Processor.from_pretrained(model_name)  # Load processor for query handling
+    model_name, torch_dtype=torch.bfloat16, device_map=settings.device_map  # Use settings for torch dtype and device
+)
+processor = ColQwen2Processor.from_pretrained(model_name)
 model = model.eval()  # Set model to evaluation mode
 
-# Define a list of queries
-queries = [
-    "water falls", 
-    "what is the date of issue?", 
-    "how many bears live in this world?"
-]
 
 # Create a DataLoader to process the queries
 dataloader = DataLoader(
     queries,
-    batch_size=1,
+    batch_size=settings.batch_size,  # Use batch size from settings
     shuffle=False,
-    collate_fn=lambda x: processor.process_queries(x),  # Use processor to process queries
+    collate_fn=lambda x: processor.process_queries(x),
 )
 
 # Generate embeddings for each query using the model
@@ -75,7 +78,7 @@ def save_query_results_as_html(query, response, hits=5, file_name="results.html"
     print(f"Results saved to: {abs_file_path}")
 
 # Initialize Vespa application with local instance
-app = Vespa(url="http://localhost", port=8080)
+app = Vespa(url=settings.vespa_url, port=settings.vespa_port)  # Use dynamic URL and port from settings
 
 # Define an asynchronous function to execute queries
 async def main():
@@ -88,8 +91,8 @@ async def main():
             # Execute the Vespa query with embeddings and additional parameters
             response: VespaQueryResponse = await session.query(
                 yql="select title,url,image,page_number from pdf_page where userInput(@userQuery)",  # YQL query
-                ranking="default",  # Use default ranking profile
-                userQuery=query,  # Pass the user query
+                ranking=settings.ranking_profile_name,  # Use ranking profile from settings
+                userQuery=query,
                 timeout=120,  # Set a timeout
                 hits=3,  # Limit results to 3 hits
                 body={

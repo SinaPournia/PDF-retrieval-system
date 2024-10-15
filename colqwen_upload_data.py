@@ -11,41 +11,27 @@ from colpali_engine.models import ColQwen2, ColQwen2Processor
 from vespa.application import Vespa
 from vespa.io import VespaResponse
 import asyncio
+import json
+from config import settings  # Import configuration settings
 
-# Initialize the model and processor
-model_name = "impactframes/colqwen2-v0.1"
+# Initialize the model and processor using settings
+model_name = settings.colpali_model_name  # Get model name from settings
 model = ColQwen2.from_pretrained(
-    model_name, torch_dtype=torch.bfloat16, device_map={"": "cuda:0"}
+    model_name, torch_dtype=torch.bfloat16, device_map=settings.device_map  # Use torch_dtype and device_map from settings
 )
 processor = ColQwen2Processor.from_pretrained(model_name)
 model = model.eval()
 
-# Sample PDFs
-sample_pdfs = [
-    {
-        "title": "ConocoPhillips Sustainability Highlights - Nature (24-0976)",
-        "url": "https://static.conocophillips.com/files/resources/24-0976-sustainability-highlights_nature.pdf",
-    },
-    {
-        "title": "ConocoPhillips Managing Climate Related Risks",
-        "url": "https://static.conocophillips.com/files/resources/conocophillips-2023-managing-climate-related-risks.pdf",
-    },
-    {
-        "title": "ConocoPhillips 2023 Sustainability Report",
-        "url": "https://static.conocophillips.com/files/resources/conocophillips-2023-sustainability-report.pdf",
-    },
-    {
-        "title": "WaterPipes",
-        "url": "https://www.arct.cam.ac.uk/sites/www.arct.cam.ac.uk/files/p_33campbell.pdf",
-    },
-    {
-        "title": "Water Falls",
-        "url": "https://abbeyroadprimary.co.uk/wp-content/uploads/2020/07/Geography-Rivers-session-2-Waterfalls-Input.pdf",
-    },
-]
+def load_pdfs_from_json(json_file_path):
+    with open(json_file_path, 'r') as f:
+        return json.load(f)
 
-# Helper function to resize images
-def resize_image(image, max_height=800):
+# Path to the JSON file containing PDF details
+json_file_path = 'pdfs.json'
+sample_pdfs = load_pdfs_from_json(json_file_path)
+
+# Helper function to resize images using settings
+def resize_image(image, max_height=settings.image_resize):  # Use image resize from settings
     width, height = image.size
     if height > max_height:
         ratio = max_height / height
@@ -89,7 +75,7 @@ for pdf in sample_pdfs:
     page_embeddings = []
     dataloader = DataLoader(
         pdf['images'],
-        batch_size=1,
+        batch_size=settings.batch_size,  # Use batch size from settings
         shuffle=False,
         collate_fn=lambda x: processor.process_images(x),
     )
@@ -116,7 +102,7 @@ for pdf in sample_pdfs:
     url = pdf['url']
     title = pdf['title']
     for page_number, (page_text, embedding, image) in enumerate(zip(pdf['texts'], pdf['embeddings'], pdf['images'])):
-        base_64_image = get_base64_image(resize_image(image, 640))
+        base_64_image = get_base64_image(resize_image(image, settings.image_resize))  # Use dynamic image resize
         embedding_dict = dict()
         for idx, patch_embedding in enumerate(embedding):
             binary_vector = np.packbits(np.where(patch_embedding > 0, 1, 0)).astype(np.int8).tobytes().hex()
@@ -130,4 +116,4 @@ for pdf in sample_pdfs:
             "text": page_text,
             "embedding": embedding_dict
         }
-        vespa_feed
+        vespa_feed.append(page)

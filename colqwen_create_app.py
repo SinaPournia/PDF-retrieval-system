@@ -1,11 +1,16 @@
 import os
+import dotenv
+from config import settings 
 from vespa.package import Schema, Document, Field, FieldSet, HNSW
 from vespa.package import ApplicationPackage
 from vespa.package import RankProfile, Function, FirstPhaseRanking, SecondPhaseRanking
+from config import settings  # Import settings from config.py
 
+dotenv.load_dotenv()
 # Define Vespa schema and ranking profiles
+
 colpali_schema = Schema(
-    name="pdf_page",
+    name=settings.vespa_app_name,  # Use vespa app name from settings
     document=Document(
         fields=[
             Field(name="id", type="string", indexing=["summary", "index"], match=["word"]),
@@ -27,7 +32,7 @@ colpali_schema = Schema(
 
 # Create ranking profiles
 colpali_profile = RankProfile(
-    name="default",
+    name=settings.ranking_profile_name,  # Use ranking profile name from settings
     inputs=[("query(qt)", "tensor<float>(querytoken{}, v[128])")],
     functions=[
         Function(
@@ -54,7 +59,7 @@ colpali_profile = RankProfile(
 colpali_schema.add_rank_profile(colpali_profile)
 
 # Create Vespa application package
-vespa_app_name = "codersociety"
+vespa_app_name = settings.vespa_app_name  # Use Vespa app name from settings
 vespa_application_package = ApplicationPackage(
     name=vespa_app_name,
     schema=[colpali_schema]
