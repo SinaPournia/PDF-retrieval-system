@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  vespa:
+    image: vespaengine/vespa
+    container_name: vespa-container
+    hostname: vespa-container
+    ports:
+      - 8080:8080
+      - 19071:19071
+    volumes:
+      - vespa-data:/opt/vespa/var
+    networks:
+      - application_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:19071/ApplicationStatus"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  vespa-data: null
+
+networks:
+  application_network:
+    driver: bridge
