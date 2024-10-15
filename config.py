@@ -30,7 +30,5 @@ class Settings(BaseSettings):
 
 
 
-    queries: list = Field(default=["example query 1", "example query 2"], env="QUERIES")  # List of queries
-
 # Instantiate the settings to be used in the app
 settings = Settings()
