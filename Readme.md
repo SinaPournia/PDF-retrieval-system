@@ -8,6 +8,12 @@
 
 This advanced PDF retrieval system combines **ColQwen2** (an enhanced version of ColPali) and **Vespa** to efficiently process, store, and retrieve PDF content using both textual and visual features.
 
+### Files and Configuration
+
+- `pdfs.json`: Contains the list of PDFs to process and index in the Vespa database. Each entry in the file includes a title and URL for each PDF.
+
+- `queries.json`: Defines the list of queries that the system will use to retrieve content. These queries can be adjusted based on what information you're looking to extract from the PDFs.
+
 ## 📋 Prerequisites
 
 Ensure you have the following tools installed before proceeding:
@@ -26,7 +32,7 @@ Ensure you have the following tools installed before proceeding:
   ```
 
 - **PDF Tools**  
-  The project uses `pypdf` for text extraction and `pdf2image` for converting PDF pages to images, both of which are added via Poetry. However, `pdf2image` requires **Poppler**, a separate system tool. Install Poppler with the following commands:
+  The project uses `pypdf` for text extraction and `pdf2image` for converting PDF pages to images, both of which are installed via Poetry. However, `pdf2image` requires **Poppler**, a separate system tool. Install Poppler with the following commands:
   
   - On **macOS** (via Homebrew):
     ```bash
@@ -67,7 +73,14 @@ Once you have the prerequisites installed, follow these steps to set up and run 
 5. **Retrieve and Generate Report**  
    Run `retrive_and_generate_report.py` to query the Vespa application and retrieve results. This will generate HTML files to visualize the retrieved results.
 
----
+    ### Nearest Neighbor Retrieval
+    
+    For nearest neighbor retrieval ranking, use the following versions of the scripts:
+    
+    - Run `create_vespa_app_NN.py` to configure the Vespa application schema with nearest neighbor retrieval ranking.
+    - Run `retrive_and_generate_report_NN.py` to query the Vespa application using nearest neighbor retrieval and generate the corresponding HTML reports.
+    
+    ---
 
 ## 🔍 Process Flow
 

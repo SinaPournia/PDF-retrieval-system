@@ -77,13 +77,17 @@ def create_and_save_vespa_schema():
 
 
 def create_validation_overrides(app_dir):
+    # Get tomorrow's date in the desired format (YYYY-MM-DD)
+    tomorrow_date = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+    
     validation_file = os.path.join(app_dir, "validation-overrides.xml")
+    
     if not os.path.exists(validation_file):
         with open(validation_file, "w") as f:
-            f.write("""
+            f.write(f"""
             <validation-overrides>
-              <allow until='2024-11-11'>schema-removal</allow>
-              <allow until='2024-11-11'>content-cluster-removal</allow>  
+              <allow until='{tomorrow_date}'>schema-removal</allow>
+              <allow until='{tomorrow_date}'>content-cluster-removal</allow>  
             </validation-overrides>
             """)
 
