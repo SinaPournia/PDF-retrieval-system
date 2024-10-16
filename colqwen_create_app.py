@@ -4,7 +4,7 @@ import dotenv
 from vespa.package import Schema, Document, Field, FieldSet, HNSW
 from vespa.package import ApplicationPackage
 from vespa.package import RankProfile, Function, FirstPhaseRanking, SecondPhaseRanking
-from config import Settings  # Import settings from config.py
+from config import Settings  
 from datetime import datetime, timedelta
 
 

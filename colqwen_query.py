@@ -6,21 +6,25 @@ from colpali_engine.models import ColQwen2, ColQwen2Processor
 from vespa.application import Vespa
 import webbrowser
 import os
-from config import settings  # Import settings
+from config import Settings  # Import settings
 import json
-
+settings = Settings()
+print(str(settings.vespa_url))
 with open("queries.json", "r") as f:
     queries = json.load(f)["queries"]
 
 for query in queries:
     print(query)
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Initialize the model and processor using settings
-model_name = settings.colpali_model_name  # Get model name from settings
+model_name = settings.model_name  # Get model name from settings
 print(torch.cuda.is_available())  # Check if CUDA is available
 model = ColQwen2.from_pretrained(
-    model_name, torch_dtype=torch.bfloat16, device_map=settings.device_map  # Use settings for torch dtype and device
+    model_name,
+    torch_dtype=torch.bfloat16,
+    device_map=device  # Automatically select GPU if available
 )
 processor = ColQwen2Processor.from_pretrained(model_name)
 model = model.eval()  # Set model to evaluation mode
@@ -79,7 +83,6 @@ def save_query_results_as_html(query, response, hits=5, file_name="results.html"
 
 # Initialize Vespa application with local instance
 app = Vespa(url=settings.vespa_url)  # Use dynamic URL and port from settings
-
 # Define an asynchronous function to execute queries
 async def main():
     # Open a session with Vespa using asyncio
@@ -90,7 +93,7 @@ async def main():
             
             # Execute the Vespa query with embeddings and additional parameters
             response: VespaQueryResponse = await session.query(
-                yql="select title,url,image,page_number from pdf_page where userInput(@userQuery)",  # YQL query
+                yql= f"select title,url,image,page_number from {settings.vespa_app_name} where userInput(@userQuery)",  # YQL query
                 ranking=settings.ranking_profile_name,  # Use ranking profile from settings
                 userQuery=query,
                 timeout=120,  # Set a timeout

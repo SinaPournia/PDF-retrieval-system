@@ -12,12 +12,18 @@ from vespa.application import Vespa
 from vespa.io import VespaResponse
 import asyncio
 import json
-from config import settings  # Import configuration settings
-
+from config import Settings  
+settings = Settings()
 # Initialize the model and processor using settings
-model_name = settings.colpali_model_name  # Get model name from settings
+model_name = settings.model_name  # Get model name from settings
+# Automatically set device_map to "cuda" if GPU is available, otherwise "cpu"
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(device)
+# Load the model with the appropriate device and dtype
 model = ColQwen2.from_pretrained(
-    model_name, torch_dtype=torch.bfloat16, device_map=settings.device_map  # Use torch_dtype and device_map from settings
+    model_name,
+    torch_dtype=torch.bfloat16,
+    device_map=device  # Automatically select GPU if available
 )
 processor = ColQwen2Processor.from_pretrained(model_name)
 model = model.eval()

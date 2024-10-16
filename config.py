@@ -13,9 +13,7 @@ class Settings(BaseSettings):
     vespa_protocol: str = Field(default="http")  # Vespa URL
     vespa_port: int = Field(default=8080)  # Vespa port
     model_name: str = Field(default="impactframes/colqwen2-v0.1")  # Model name
-    device_map: str = Field(default="cuda:0")  # Device mapping for model
     batch_size: int = Field(default=1)  # Batch size for DataLoader
-    image_resize: int = Field(default=800)
 
     model_config = SettingsConfigDict(
         env_prefix="MYAPP_",         # Prefix for env variables
@@ -28,7 +26,7 @@ class Settings(BaseSettings):
     @property
     def vespa_url(self) -> str:
         """Dynamically construct the Vespa URL."""
-        return f"{self.vespa_protocol}://{self.vespa_host}:{self.vespa_port}/{self.vespa_app_name}/"
+        return f"{self.vespa_protocol}://{self.vespa_host}:{self.vespa_port}/"
 
 
 
