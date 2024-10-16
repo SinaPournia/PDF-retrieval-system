@@ -81,7 +81,7 @@ for pdf in sample_pdfs:
     page_embeddings = []
     dataloader = DataLoader(
         pdf['images'],
-        batch_size=settings.batch_size,  # Use batch size from settings
+        batch_size=settings.batch_size,  
         shuffle=False,
         collate_fn=lambda x: processor.process_images(x),
     )
@@ -123,3 +123,20 @@ for pdf in sample_pdfs:
             "embedding": embedding_dict
         }
         vespa_feed.append(page)
+
+
+async def feed_vespa_pages(appLocal, vespa_feed):
+    async with appLocal.asyncio(connections=1, total_timeout=180) as session:
+        for page in tqdm(vespa_feed):
+            response: VespaResponse = await session.feed_data_point(
+                data_id=page['id'], fields=page, schema=settings.vespa_app_name
+            )
+            if not response.is_successful():
+                print(response.json())
+
+async def main():
+    app = Vespa(url=settings.vespa_url) 
+    await feed_vespa_pages(app, vespa_feed)
+
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -34,11 +34,19 @@ def create_and_save_vespa_schema():
         ),
         fieldsets=[FieldSet(name="default", fields=["title", "text"])]
     )
-
+    
     # Create ranking profiles
-    colpali_profile = RankProfile(
-        name=settings.ranking_profile_name,  # Use ranking profile name from settings
-        inputs=[("query(qt)", "tensor<float>(querytoken{}, v[128])")],
+    input_query_tensors = []
+    MAX_QUERY_TERMS = 64
+    for i in range(MAX_QUERY_TERMS):
+        input_query_tensors.append((f"query(rq{i})", "tensor<int8>(v[16])"))
+
+    input_query_tensors.append(("query(qt)", "tensor<float>(querytoken{}, v[128])"))
+    input_query_tensors.append(("query(qtb)", "tensor<int8>(querytoken{}, v[16])"))
+
+    colpali_retrieval_profile = RankProfile(
+        name="retrieval-and-rerank",
+        inputs=input_query_tensors,
         functions=[
             Function(
                 name="max_sim",
@@ -55,13 +63,25 @@ def create_and_save_vespa_schema():
                 """,
             ),
             Function(
-                name="bm25_score", expression="bm25(title) + bm25(text)"
-            )
+                name="max_sim_binary",
+                expression="""
+                    sum(
+                    reduce(
+                        1/(1 + sum(
+                            hamming(query(qtb), attribute(embedding)) ,v)
+                        ),
+                        max,
+                        patch
+                    ),
+                    querytoken
+                    )
+                """,
+            ),
         ],
-        first_phase=FirstPhaseRanking(expression="bm25_score"),
-        second_phase=SecondPhaseRanking(expression="max_sim", rerank_count=100)
-    )
-    colpali_schema.add_rank_profile(colpali_profile)
+        first_phase=FirstPhaseRanking(expression="max_sim_binary"),
+        second_phase=SecondPhaseRanking(expression="max_sim", rerank_count=10),
+        )
+    colpali_schema.add_rank_profile(colpali_retrieval_profile)
 
     # Create Vespa application package
     vespa_app_name = settings.vespa_app_name  # Use Vespa app name from settings
@@ -75,7 +95,6 @@ def create_and_save_vespa_schema():
 
     return vespa_app_name
 
-import os
 
 def create_validation_overrides(app_dir):
     validation_file = os.path.join(app_dir, "validation-overrides.xml")
