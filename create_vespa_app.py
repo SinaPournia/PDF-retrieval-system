@@ -1,6 +1,5 @@
 import os
 import subprocess
-import dotenv
 from vespa.package import Schema, Document, Field, FieldSet, HNSW
 from vespa.package import ApplicationPackage
 from vespa.package import RankProfile, Function, FirstPhaseRanking, SecondPhaseRanking
