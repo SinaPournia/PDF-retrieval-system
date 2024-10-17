@@ -125,8 +125,8 @@ for pdf in sample_pdfs:
         vespa_feed.append(page)
 
 
-async def feed_vespa_pages(appLocal, vespa_feed):
-    async with appLocal.asyncio(connections=1, total_timeout=180) as session:
+async def feed_vespa_pages(vespa_client, vespa_feed):
+    async with vespa_client.asyncio(connections=1, total_timeout=180) as session:
         for page in tqdm(vespa_feed):
             response: VespaResponse = await session.feed_data_point(
                 data_id=page['id'], fields=page, schema=settings.vespa_app_name
@@ -135,8 +135,8 @@ async def feed_vespa_pages(appLocal, vespa_feed):
                 print(response.json())
 
 async def main():
-    app = Vespa(url=settings.vespa_url) 
-    await feed_vespa_pages(app, vespa_feed)
+    vespa_client = Vespa(url=settings.vespa_url) 
+    await feed_vespa_pages(vespa_client, vespa_feed)
 
 if __name__ == "__main__":
     asyncio.run(main())
